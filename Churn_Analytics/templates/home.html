@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Customer Churn Prediction</title>
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#0b1020;
+      --bg2:#121a33;
+      --card:#0f1730cc;
+      --stroke: rgba(255,255,255,.08);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+    }
+    body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 15% 15%, rgba(96,165,250,.22), transparent 55%),
+        radial-gradient(900px 500px at 85% 20%, rgba(244,114,182,.18), transparent 55%),
+        radial-gradient(900px 500px at 50% 90%, rgba(34,197,94,.15), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+    .glass{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .brand-dot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: linear-gradient(135deg, #60a5fa, #f472b6);
+      display: inline-block; margin-right: .5rem;
+      box-shadow: 0 0 0 6px rgba(96,165,250,.18);
+    }
+    .badge-soft{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-weight: 600;
+    }
+    .form-label{ color: var(--muted); font-weight: 600; }
+    .form-control, .form-select{
+      background: rgba(255,255,255,.06) !important;
+      border: 1px solid var(--stroke) !important;
+      color: var(--text) !important;
+      border-radius: .85rem;
+      padding: .75rem .85rem;
+    }
+    .form-control::placeholder{ color: rgba(255,255,255,.40); }
+    .form-select option{ color: #0b1020; } /* only affects dropdown list */
+    .divider{
+      border-top: 1px solid var(--stroke);
+      margin: 1.15rem 0;
+    }
+    .btn-primary{
+      background: linear-gradient(135deg, #60a5fa, #8b5cf6);
+      border: none;
+      border-radius: .95rem;
+      box-shadow: 0 14px 40px rgba(96,165,250,.20);
+    }
+    .btn-outline-light{
+      border-color: var(--stroke);
+      color: var(--text);
+      border-radius: .95rem;
+    }
+    .btn-outline-light:hover{ background: rgba(255,255,255,.08); }
+    .small-help{ color: var(--muted); }
+    .hint-chip{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: .25rem .55rem;
+      font-size: .85rem;
+      display: inline-flex;
+      gap: .35rem;
+      align-items: center;
+      margin-right: .35rem;
+      margin-bottom: .35rem;
+    }
+    .progress{
+      height: .75rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid var(--stroke);
+    }
+    .progress-bar{
+      border-radius: 999px;
+    }
+    footer{
+      color: rgba(255,255,255,.55);
+    }
+    .section-title{
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: .78rem;
+      color: rgba(255,255,255,.70);
+      margin-bottom: .35rem;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark py-3">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <span class="brand-dot"></span>
+        ChurnSense
+      </a>
+      <div class="ms-auto d-flex gap-2">
+        <span class="badge badge-soft rounded-pill px-3 py-2"><i class="bi bi-shield-check me-1"></i>Fast, simple, local</span>
+        <span class="badge badge-soft rounded-pill px-3 py-2 d-none d-md-inline"><i class="bi bi-cpu me-1"></i>ML-powered</span>
+      </div>
+    </div>
+  </nav>
+
+  <header class="container pb-2">
+    <div class="glass p-4 p-md-5">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+          <h1 class="fw-bold display-6 mb-2">Customer Churn Prediction</h1>
+          <p class="mb-0 small-help">
+            Enter customer details and get an instant churn-risk prediction with a confidence score. Use this to prioritize retention outreach.
+          </p>
+        </div>
+        <div class="col-lg-4">
+          <div class="d-flex flex-wrap justify-content-lg-end">
+            <span class="hint-chip"><i class="bi bi-lightning-charge"></i> Instant scoring</span>
+            <span class="hint-chip"><i class="bi bi-funnel"></i> Lead prioritization</span>
+            <span class="hint-chip"><i class="bi bi-graph-up-arrow"></i> Better retention</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container py-4">
+    <div class="row g-4">
+      <!-- Left: info -->
+      <div class="col-lg-5">
+        <div class="glass p-4 p-md-5 h-100">
+          <div class="section-title">How it works</div>
+          <p class="mb-3 small-help">
+            Provide a few account, service, and billing details. The model estimates churn probability, so you can act early with offers, support, and personalized nudges.
+          </p>
+
+          <div class="section-title">Tips for best results</div>
+          <ul class="small-help mb-3">
+            <li>Use realistic tenure (months) and charges.</li>
+            <li>For “No internet service”, pick the same for all add-ons like OnlineSecurity/Backup/etc.</li>
+            <li>If you’re unsure, click <span class="fw-semibold">Fill sample</span> and adjust.</li>
+          </ul>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Output</div>
+          <div class="d-flex gap-3">
+            <div class="flex-grow-1">
+              <div class="small-help">Churn probability</div>
+              <div class="fw-bold">0% → 100%</div>
+            </div>
+            <div class="flex-grow-1">
+              <div class="small-help">Recommendation</div>
+              <div class="fw-bold">Retain vs Monitor</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-title">Privacy note</div>
+          <p class="small-help mb-0">
+            This app runs locally on your machine and does not send your inputs anywhere.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: form + results -->
+      <div class="col-lg-7">
+        <div class="glass p-4 p-md-5">
+          {% if error %}
+          <div class="alert alert-warning border-0" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> {{ error }}
+          </div>
+          {% endif %}
+
+          <form method="POST" action="{{ url_for('index') }}" class="needs-validation" novalidate>
+            <!-- Customer profile -->
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="section-title mb-0">Customer profile</div>
+              <span class="small-help"><i class="bi bi-info-circle me-1"></i>All fields required</span>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" for="query4">Gender</label>
+                <select class="form-select" id="query4" name="query4" required>
+                  <option value="" disabled {% if not query4 %}selected{% endif %}>Select</option>
+                  <option value="Female" {% if query4=='Female' %}selected{% endif %}>Female</option>
+                  <option value="Male" {% if query4=='Male' %}selected{% endif %}>Male</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="query1">Senior Citizen</label>
+                <select class="form-select" id="query1" name="query1" required>
+                  <option value="0" {% if query1=='0' %}selected{% endif %}>No</option>
+                  <option value="1" {% if query1=='1' %}selected{% endif %}>Yes</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label" for="query19">Tenure (months)</label>
+                <input type="number" class="form-control" id="query19" name="query19" placeholder="e.g., 12" min="0" step="1" value="{{ query19 or '' }}" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query5">Partner</label>
+                <select class="form-select" id="query5" name="query5" required>
+                  <option value="No" {% if query5=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query5=='Yes' %}selected{% endif %}>Yes</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query6">Dependents</label>
+                <select class="form-select" id="query6" name="query6" required>
+                  <option value="No" {% if query6=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query6=='Yes' %}selected{% endif %}>Yes</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Charges -->
+            <div class="section-title">Charges</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="query2">Monthly Charges</label>
+                <input type="number" class="form-control" id="query2" name="query2" placeholder="e.g., 79.65" min="0" step="0.01" value="{{ query2 or '' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="query3">Total Charges</label>
+                <input type="number" class="form-control" id="query3" name="query3" placeholder="e.g., 1023.55" min="0" step="0.01" value="{{ query3 or '' }}" required>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Services -->
+            <div class="section-title">Services</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="query7">Phone Service</label>
+                <select class="form-select" id="query7" name="query7" required>
+                  <option value="No" {% if query7=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query7=='Yes' %}selected{% endif %}>Yes</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query8">Multiple Lines</label>
+                <select class="form-select" id="query8" name="query8" required>
+                  <option value="No" {% if query8=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query8=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No phone service" {% if query8=='No phone service' %}selected{% endif %}>No phone service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query9">Internet Service</label>
+                <select class="form-select" id="query9" name="query9" required>
+                  <option value="DSL" {% if query9=='DSL' %}selected{% endif %}>DSL</option>
+                  <option value="Fiber optic" {% if query9=='Fiber optic' %}selected{% endif %}>Fiber optic</option>
+                  <option value="No" {% if query9=='No' %}selected{% endif %}>No</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query10">Online Security</label>
+                <select class="form-select" id="query10" name="query10" required>
+                  <option value="No" {% if query10=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query10=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query10=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query11">Online Backup</label>
+                <select class="form-select" id="query11" name="query11" required>
+                  <option value="No" {% if query11=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query11=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query11=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query12">Device Protection</label>
+                <select class="form-select" id="query12" name="query12" required>
+                  <option value="No" {% if query12=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query12=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query12=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query13">Tech Support</label>
+                <select class="form-select" id="query13" name="query13" required>
+                  <option value="No" {% if query13=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query13=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query13=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query14">Streaming TV</label>
+                <select class="form-select" id="query14" name="query14" required>
+                  <option value="No" {% if query14=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query14=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query14=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query15">Streaming Movies</label>
+                <select class="form-select" id="query15" name="query15" required>
+                  <option value="No" {% if query15=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query15=='Yes' %}selected{% endif %}>Yes</option>
+                  <option value="No internet service" {% if query15=='No internet service' %}selected{% endif %}>No internet service</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Billing -->
+            <div class="section-title">Contract & billing</div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="query16">Contract</label>
+                <select class="form-select" id="query16" name="query16" required>
+                  <option value="Month-to-month" {% if query16=='Month-to-month' %}selected{% endif %}>Month-to-month</option>
+                  <option value="One year" {% if query16=='One year' %}selected{% endif %}>One year</option>
+                  <option value="Two year" {% if query16=='Two year' %}selected{% endif %}>Two year</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label" for="query17">Paperless Billing</label>
+                <select class="form-select" id="query17" name="query17" required>
+                  <option value="No" {% if query17=='No' %}selected{% endif %}>No</option>
+                  <option value="Yes" {% if query17=='Yes' %}selected{% endif %}>Yes</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label" for="query18">Payment Method</label>
+                <select class="form-select" id="query18" name="query18" required>
+                  <option value="Electronic check" {% if query18=='Electronic check' %}selected{% endif %}>Electronic check</option>
+                  <option value="Mailed check" {% if query18=='Mailed check' %}selected{% endif %}>Mailed check</option>
+                  <option value="Bank transfer (automatic)" {% if query18=='Bank transfer (automatic)' %}selected{% endif %}>Bank transfer (automatic)</option>
+                  <option value="Credit card (automatic)" {% if query18=='Credit card (automatic)' %}selected{% endif %}>Credit card (automatic)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-primary btn-lg px-4" type="submit">
+                <i class="bi bi-magic me-1"></i> Predict churn
+              </button>
+              <button class="btn btn-outline-light btn-lg px-4" type="reset">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+              </button>
+              <button class="btn btn-outline-light btn-lg px-4" type="button" id="fillSampleBtn">
+                <i class="bi bi-lightning me-1"></i> Fill sample
+              </button>
+            </div>
+
+            <div class="mt-3 small-help">
+              <i class="bi bi-check2-circle me-1"></i> If you select <span class="fw-semibold">Internet Service = No</span>, consider choosing <span class="fw-semibold">No internet service</span> for add-ons.
+            </div>
+          </form>
+        </div>
+
+        {% if output1 %}
+        <div class="glass p-4 p-md-5 mt-4">
+          {% set p = (churn_prob * 100) if churn_prob is not none else None %}
+          {% set high = (churn_prob is not none and churn_prob >= 0.5) %}
+          <div class="d-flex align-items-start justify-content-between gap-3">
+            <div>
+              <div class="section-title">Prediction</div>
+              <h3 class="fw-bold mb-1">
+                {% if high %}
+                  <i class="bi bi-exclamation-diamond me-1"></i> High churn risk
+                {% else %}
+                  <i class="bi bi-check-circle me-1"></i> Low churn risk
+                {% endif %}
+              </h3>
+              <div class="small-help">{{ output1 }}</div>
+            </div>
+            {% if p is not none %}
+              <span class="badge badge-soft rounded-pill px-3 py-2">
+                <i class="bi bi-percent me-1"></i> {{ p | round(1) }}%
+              </span>
+            {% endif %}
+          </div>
+
+          {% if p is not none %}
+          <div class="mt-3">
+            <div class="d-flex justify-content-between small-help mb-1">
+              <span>Churn probability</span>
+              <span class="fw-semibold">{{ p | round(1) }}%</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar {% if high %}bg-danger{% else %}bg-success{% endif %}" role="progressbar"
+                   style="width: {{ p | round(1) }}%;" aria-valuenow="{{ p | round(1) }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="mt-2 small-help">
+              {{ output2 }}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="divider"></div>
+
+          <div class="row g-3 small-help">
+            <div class="col-md-6">
+              <div class="fw-semibold">Suggested next step</div>
+              {% if high %}
+                <div>Route to retention queue: offer plan upgrade / discount + proactive support call.</div>
+              {% else %}
+                <div>Monitor normally; consider engagement nudges and value reminders.</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <div class="fw-semibold">Quick checks</div>
+              <div>Tenure group + contract type are typically strong churn signals.</div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+
+  <footer class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+      <div>© {{ 2026 }} ChurnSense • Demo UI for churn prediction</div>
+      <div class="small">Built with Flask + Bootstrap</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Bootstrap validation
+    (() => {
+      'use strict'
+      const forms = document.querySelectorAll('.needs-validation')
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          form.classList.add('was-validated')
+        }, false)
+      })
+    })();
+
+    // Fill sample values (safe categories so you won't create unseen dummy columns)
+    document.getElementById('fillSampleBtn')?.addEventListener('click', () => {
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      set('query4', 'Female');
+      set('query1', '0');
+      set('query19', '12');
+      set('query5', 'Yes');
+      set('query6', 'No');
+
+      set('query2', '79.65');
+      set('query3', '1023.55');
+
+      set('query7', 'Yes');
+      set('query8', 'No');
+      set('query9', 'Fiber optic');
+      set('query10', 'No');
+      set('query11', 'Yes');
+      set('query12', 'No');
+      set('query13', 'No');
+      set('query14', 'Yes');
+      set('query15', 'Yes');
+
+      set('query16', 'Month-to-month');
+      set('query17', 'Yes');
+      set('query18', 'Electronic check');
+    });
+  </script>
+</body>
+</html>
