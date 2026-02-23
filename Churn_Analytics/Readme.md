@@ -66,21 +66,7 @@
 ---
 
 ## How to Run the Flask App (Deployment)
-
-- **Prerequisites:** Python 3.x, pip
-- **Install dependencies:**
-  - (Option A) If you have `requirements.txt`:
-    - `pip install -r requirements.txt`
-  - (Option B) Minimum typical packages:
-    - `pip install flask pandas numpy scikit-learn imbalanced-learn`
-
-- **Project files needed (typical):**
-  - `app.py`
-  - `model.sav`
-  - `first_telc.csv` (reference columns file used by the app for feature alignment)
-  - `templates/home.html`
-
-- **Run the app:**
+ **Run the app:**
   - `python app.py`
 
 - **Open in browser:**
