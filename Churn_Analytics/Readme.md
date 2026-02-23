@@ -1,3 +1,4 @@
+![App1](Images/App1.png)
 ## Telco Customer Churn Prediction — Project Description (Detailed)
 
 - **Goal:** Predict whether a telecom customer will **churn (leave the service)** so businesses can proactively target retention campaigns.
